@@ -1,0 +1,69 @@
+{
+  "id": "57e9b1f2-35d8-4f12-9c3e-8bfa4c268a3a",
+  "name": "レビューリクエスト",
+  "icon": "rate_review",
+  "color": "#F57C00",
+  "description": "記事がレビュー依頼されたときに編集者に通知するワークフロー",
+  "status": "active",
+  "trigger": "event",
+  "accountability": "all",
+  "options": {
+    "type": "filter",
+    "filter": {
+      "collection": "articles",
+      "event": "update",
+      "payload": {
+        "status": {
+          "_eq": "under_review"
+        }
+      }
+    }
+  },
+  "operations": [
+    {
+      "id": "a8d13e20-1ff5-4e3a-9ac1-45f762dbefb9",
+      "name": "記事データの取得",
+      "key": "get_article",
+      "type": "item-read",
+      "position_x": 19,
+      "position_y": 1,
+      "options": {
+        "collection": "articles",
+        "key": "{{$trigger.key}}"
+      }
+    },
+    {
+      "id": "42c2c5e9-5bd2-4f5e-a130-960b4e55da90",
+      "name": "編集者一覧の取得",
+      "key": "get_editors",
+      "type": "request",
+      "position_x": 19,
+      "position_y": 2,
+      "options": {
+        "url": "{{$env.PUBLIC_URL}}/users",
+        "method": "GET",
+        "query": {
+          "filter": {
+            "role": {
+              "_eq": "2a51d60e-c9ae-4e3f-a82a-28e7a97c0f28"
+            }
+          }
+        },
+        "headers": {
+          "Authorization": "Bearer {{$env.ADMIN_TOKEN}}"
+        }
+      }
+    },
+    {
+      "id": "6fee825a-5780-4b53-ae84-cb0e75ad7a28",
+      "name": "編集者に通知",
+      "key": "notify_editors",
+      "type": "exec",
+      "position_x": 19,
+      "position_y": 3,
+      "options": {
+        "code": "const article = $last[0];\nconst editors = $last[1].data;\n\nfor (const editor of editors) {\n  // メール送信\n  // 実際にはDirectusのメール送信機能を使用\n  console.log(`編集者 ${editor.first_name} ${editor.last_name}に通知: 記事「${article.title}」のレビュー依頼`);\n}\n\nreturn { article, editors };"
+      }
+    }
+  ]
+}

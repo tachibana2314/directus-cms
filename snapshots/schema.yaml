@@ -1,0 +1,522 @@
+version: 1
+directus: 10.0.0
+collections:
+  - collection: articles
+    meta:
+      collection: articles
+      icon: article
+      note: ブログやニュース記事の管理
+      display_template: "{{title}}"
+      sort: 1
+      archive_field: status
+      archive_value: archived
+      unarchive_value: draft
+    schema:
+      name: articles
+    fields:
+      - field: id
+        type: uuid
+        meta:
+          hidden: true
+          readonly: true
+          interface: input
+          special:
+            - uuid
+        schema:
+          is_primary_key: true
+          length: 36
+          has_auto_increment: false
+      - field: title
+        type: string
+        meta:
+          interface: input
+          options:
+            placeholder: 記事タイトルを入力
+          required: true
+          width: full
+          note: 記事の見出しとなるタイトル
+        schema:
+          is_nullable: false
+          length: 255
+      - field: slug
+        type: string
+        meta:
+          interface: input
+          options:
+            placeholder: my-article-slug
+          note: URLの一部として使用される英数字文字列
+          width: full
+          special:
+            - slug
+          validation:
+            pattern: "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+          required: true
+        schema:
+          is_nullable: false
+          is_unique: true
+          length: 255
+      - field: content
+        type: text
+        meta:
+          interface: input-rich-text-html
+          width: full
+          note: 記事の本文
+          required: true
+        schema:
+          is_nullable: false
+      - field: publish_date
+        type: timestamp
+        meta:
+          interface: datetime
+          width: half
+          note: 記事の公開日時
+          display: datetime
+        schema:
+          is_nullable: true
+      - field: status
+        type: string
+        meta:
+          width: half
+          interface: select-dropdown
+          options:
+            choices:
+              - text: 下書き
+                value: draft
+              - text: レビュー中
+                value: under_review
+              - text: 公開中
+                value: published
+              - text: アーカイブ
+                value: archived
+          required: true
+          display: labels
+          display_options:
+            showAsDot: true
+            choices:
+              - background: "#ECEFF1"
+                value: draft
+                text: 下書き
+              - background: "#FFF8E1"
+                value: under_review
+                text: レビュー中
+              - background: "#F1F8E9"
+                value: published
+                text: 公開中
+              - background: "#EFEBE9"
+                value: archived
+                text: アーカイブ
+          default: draft
+        schema:
+          default_value: draft
+          is_nullable: false
+          length: 255
+      - field: category_id
+        type: uuid
+        meta:
+          interface: select-dropdown-m2o
+          note: この記事のカテゴリ
+          width: half
+          special:
+            - m2o
+          required: false
+          options:
+            template: "{{name}}"
+          display: related-values
+          display_options:
+            template: "{{name}}"
+          collection: categories
+        schema:
+          is_nullable: true
+          foreign_key_table: categories
+          foreign_key_column: id
+      - field: featured_image
+        type: uuid
+        meta:
+          interface: file-image
+          note: 記事のアイキャッチ画像
+          width: half
+          special:
+            - file
+          required: false
+          display: image
+        schema:
+          is_nullable: true
+      - field: seo_title
+        type: string
+        meta:
+          interface: input
+          note: SEO用のタイトル（入力しない場合は記事タイトルが使用されます）
+          width: half
+        schema:
+          is_nullable: true
+          length: 100
+      - field: seo_description
+        type: text
+        meta:
+          interface: input-multiline
+          note: SEO用の説明文
+          width: half
+        schema:
+          is_nullable: true
+      - field: seo_keywords
+        type: csv
+        meta:
+          interface: tags
+          note: SEO用のキーワード（カンマ区切り）
+          width: half
+          special:
+            - csv
+        schema:
+          is_nullable: true
+      - field: user_created
+        type: uuid
+        meta:
+          special:
+            - user-created
+          interface: select-dropdown-m2o
+          options:
+            template: "{{first_name}} {{last_name}}"
+          display: user
+          readonly: true
+          hidden: true
+          width: half
+        schema:
+          on_update: CURRENT_TIMESTAMP
+      - field: date_created
+        type: timestamp
+        meta:
+          special:
+            - date-created
+          interface: datetime
+          readonly: true
+          hidden: true
+          width: half
+          display: datetime
+        schema:
+          on_update: CURRENT_TIMESTAMP
+      - field: user_updated
+        type: uuid
+        meta:
+          special:
+            - user-updated
+          interface: select-dropdown-m2o
+          options:
+            template: "{{first_name}} {{last_name}}"
+          display: user
+          readonly: true
+          hidden: true
+          width: half
+        schema:
+          on_update: CURRENT_TIMESTAMP
+      - field: date_updated
+        type: timestamp
+        meta:
+          special:
+            - date-updated
+          interface: datetime
+          readonly: true
+          hidden: true
+          width: half
+          display: datetime
+        schema:
+          on_update: CURRENT_TIMESTAMP
+
+  - collection: article_tags
+    meta:
+      collection: article_tags
+      icon: merge_type
+      note: 記事とタグの関連付け
+      hidden: true
+      sort: 3
+    schema:
+      name: article_tags
+    fields:
+      - field: id
+        type: uuid
+        meta:
+          hidden: true
+          readonly: true
+          interface: input
+          special:
+            - uuid
+        schema:
+          is_primary_key: true
+          length: 36
+          has_auto_increment: false
+      - field: article_id
+        type: uuid
+        meta:
+          interface: select-dropdown-m2o
+          special:
+            - m2o
+          required: true
+          collection: articles
+        schema:
+          is_nullable: false
+          foreign_key_table: articles
+          foreign_key_column: id
+      - field: tag_id
+        type: uuid
+        meta:
+          interface: select-dropdown-m2o
+          special:
+            - m2o
+          required: true
+          collection: tags
+        schema:
+          is_nullable: false
+          foreign_key_table: tags
+          foreign_key_column: id
+
+  - collection: categories
+    meta:
+      collection: categories
+      icon: folder
+      note: 記事のカテゴリ管理
+      display_template: "{{name}}"
+      sort: 2
+    schema:
+      name: categories
+    fields:
+      - field: id
+        type: uuid
+        meta:
+          hidden: true
+          readonly: true
+          interface: input
+          special:
+            - uuid
+        schema:
+          is_primary_key: true
+          length: 36
+          has_auto_increment: false
+      - field: name
+        type: string
+        meta:
+          interface: input
+          required: true
+          options:
+            placeholder: カテゴリ名
+          width: full
+          note: カテゴリの表示名
+        schema:
+          is_nullable: false
+          is_unique: true
+          length: 255
+      - field: slug
+        type: string
+        meta:
+          interface: input
+          note: URLの一部として使用される英数字文字列
+          width: half
+          special:
+            - slug
+          validation:
+            pattern: "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+          options:
+            placeholder: my-category-slug
+          required: true
+        schema:
+          is_nullable: false
+          is_unique: true
+          length: 255
+      - field: description
+        type: text
+        meta:
+          interface: input-multiline
+          width: half
+          note: カテゴリの説明（オプション）
+        schema:
+          is_nullable: true
+      - field: user_created
+        type: uuid
+        meta:
+          special:
+            - user-created
+          interface: select-dropdown-m2o
+          options:
+            template: "{{first_name}} {{last_name}}"
+          display: user
+          readonly: true
+          hidden: true
+          width: half
+        schema:
+          on_update: CURRENT_TIMESTAMP
+      - field: date_created
+        type: timestamp
+        meta:
+          special:
+            - date-created
+          interface: datetime
+          readonly: true
+          hidden: true
+          width: half
+          display: datetime
+        schema:
+          on_update: CURRENT_TIMESTAMP
+      - field: user_updated
+        type: uuid
+        meta:
+          special:
+            - user-updated
+          interface: select-dropdown-m2o
+          options:
+            template: "{{first_name}} {{last_name}}"
+          display: user
+          readonly: true
+          hidden: true
+          width: half
+        schema:
+          on_update: CURRENT_TIMESTAMP
+      - field: date_updated
+        type: timestamp
+        meta:
+          special:
+            - date-updated
+          interface: datetime
+          readonly: true
+          hidden: true
+          width: half
+          display: datetime
+        schema:
+          on_update: CURRENT_TIMESTAMP
+
+  - collection: tags
+    meta:
+      collection: tags
+      icon: local_offer
+      note: 記事のタグ管理
+      display_template: "{{name}}"
+      sort: 3
+    schema:
+      name: tags
+    fields:
+      - field: id
+        type: uuid
+        meta:
+          hidden: true
+          readonly: true
+          interface: input
+          special:
+            - uuid
+        schema:
+          is_primary_key: true
+          length: 36
+          has_auto_increment: false
+      - field: name
+        type: string
+        meta:
+          interface: input
+          required: true
+          options:
+            placeholder: タグ名
+          width: full
+          note: タグの表示名
+        schema:
+          is_nullable: false
+          is_unique: true
+          length: 255
+      - field: slug
+        type: string
+        meta:
+          interface: input
+          note: URLの一部として使用される英数字文字列
+          width: full
+          special:
+            - slug
+          validation:
+            pattern: "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+          options:
+            placeholder: my-tag-slug
+          required: true
+        schema:
+          is_nullable: false
+          is_unique: true
+          length: 255
+      - field: user_created
+        type: uuid
+        meta:
+          special:
+            - user-created
+          interface: select-dropdown-m2o
+          options:
+            template: "{{first_name}} {{last_name}}"
+          display: user
+          readonly: true
+          hidden: true
+          width: half
+        schema:
+          on_update: CURRENT_TIMESTAMP
+      - field: date_created
+        type: timestamp
+        meta:
+          special:
+            - date-created
+          interface: datetime
+          readonly: true
+          hidden: true
+          width: half
+          display: datetime
+        schema:
+          on_update: CURRENT_TIMESTAMP
+      - field: user_updated
+        type: uuid
+        meta:
+          special:
+            - user-updated
+          interface: select-dropdown-m2o
+          options:
+            template: "{{first_name}} {{last_name}}"
+          display: user
+          readonly: true
+          hidden: true
+          width: half
+        schema:
+          on_update: CURRENT_TIMESTAMP
+      - field: date_updated
+        type: timestamp
+        meta:
+          special:
+            - date-updated
+          interface: datetime
+          readonly: true
+          hidden: true
+          width: half
+          display: datetime
+        schema:
+          on_update: CURRENT_TIMESTAMP
+
+relations:
+  - collection: articles
+    field: category_id
+    related_collection: categories
+    schema:
+      table: articles
+      column: category_id
+      foreign_key_table: categories
+      foreign_key_column: id
+      constraint_name: articles_category_id_foreign
+      on_update: NO ACTION
+      on_delete: SET NULL
+  - collection: article_tags
+    field: article_id
+    related_collection: articles
+    schema:
+      table: article_tags
+      column: article_id
+      foreign_key_table: articles
+      foreign_key_column: id
+      constraint_name: article_tags_article_id_foreign
+      on_update: NO ACTION
+      on_delete: CASCADE
+  - collection: article_tags
+    field: tag_id
+    related_collection: tags
+    schema:
+      table: article_tags
+      column: tag_id
+      foreign_key_table: tags
+      foreign_key_column: id
+      constraint_name: article_tags_tag_id_foreign
+      on_update: NO ACTION
+      on_delete: CASCADE

@@ -1,0 +1,69 @@
+version: '3.8'
+
+services:
+  directus:
+    image: directus/directus:latest
+    ports:
+      - "8055:8055"
+    volumes:
+      - ./uploads:/directus/uploads
+      - ./extensions:/directus/extensions
+    environment:
+      KEY: 'directus-cms-docker-key'
+      SECRET: 'directus-cms-docker-secret'
+      
+      # データベース設定
+      DB_CLIENT: 'pg'
+      DB_HOST: 'database'
+      DB_PORT: '5432'
+      DB_DATABASE: 'directus'
+      DB_USER: 'directus'
+      DB_PASSWORD: 'directus'
+      
+      # 管理者アカウント
+      ADMIN_EMAIL: 'admin@example.com'
+      ADMIN_PASSWORD: 'admin_password'
+      
+      # キャッシュ設定
+      CACHE_ENABLED: 'true'
+      CACHE_STORE: 'redis'
+      CACHE_REDIS: 'redis://cache:6379'
+      
+      # 言語設定
+      DEFAULT_LANGUAGE: 'ja'
+      
+      # ストレージ設定
+      STORAGE_LOCATIONS: 'local'
+      STORAGE_LOCAL_DRIVER: 'local'
+      STORAGE_LOCAL_ROOT: '/directus/uploads'
+      
+      # APIと認証
+      PUBLIC_URL: 'http://localhost:8055'
+      API_TOKEN_EXPIRATION: '7d'
+    depends_on:
+      - database
+      - cache
+
+  database:
+    image: postgres:15
+    volumes:
+      - ./data/database:/var/lib/postgresql/data
+    environment:
+      POSTGRES_USER: 'directus'
+      POSTGRES_PASSWORD: 'directus'
+      POSTGRES_DB: 'directus'
+    ports:
+      - "5432:5432"
+
+  cache:
+    image: redis:7
+    volumes:
+      - ./data/redis:/data
+    ports:
+      - "6379:6379"
+
+volumes:
+  directus-uploads:
+  directus-extensions:
+  database-data:
+  redis-data:
