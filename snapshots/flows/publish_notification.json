@@ -1,0 +1,73 @@
+{
+  "id": "44d2f123-c1b9-4c0e-98aa-71e40c23e103",
+  "name": "記事公開通知",
+  "icon": "publish",
+  "color": "#2E7D32",
+  "description": "記事が公開されたときに通知を送信するワークフロー",
+  "status": "active",
+  "trigger": "event",
+  "accountability": "all",
+  "options": {
+    "type": "filter",
+    "filter": {
+      "collection": "articles",
+      "event": "update",
+      "payload": {
+        "status": {
+          "_eq": "published"
+        }
+      }
+    }
+  },
+  "operations": [
+    {
+      "id": "66320a7e-228d-4acb-854e-164b03b19432",
+      "name": "記事データの取得",
+      "key": "get_article",
+      "type": "item-read",
+      "position_x": 19,
+      "position_y": 1,
+      "options": {
+        "collection": "articles",
+        "key": "{{$trigger.key}}"
+      }
+    },
+    {
+      "id": "f4d4a282-ce95-44e6-b884-3b3f31e60d1f",
+      "name": "SEOメタデータ生成",
+      "key": "generate_seo",
+      "type": "exec",
+      "position_x": 19,
+      "position_y": 2,
+      "options": {
+        "code": "// SEOメタデータが未設定の場合に自動生成\nconst article = $last;\n\nif (!article.seo_title) {\n  article.seo_title = article.title;\n}\n\nif (!article.seo_description && article.content) {\n  // HTMLタグを削除してプレーンテキスト化\n  const plainText = article.content.replace(/<[^>]+>/g, '');\n  // 最初の160文字程度を説明文として使用\n  article.seo_description = plainText.substring(0, 160);\n  if (plainText.length > 160) {\n    article.seo_description += '...';\n  }\n}\n\nreturn article;"
+      }
+    },
+    {
+      "id": "217dcb5a-ce74-453c-84d9-0d2efb54fd5f",
+      "name": "記事更新",
+      "key": "update_article",
+      "type": "item-update",
+      "position_x": 19,
+      "position_y": 3,
+      "options": {
+        "collection": "articles",
+        "key": "{{$trigger.key}}",
+        "payload": "{{$last}}"
+      }
+    },
+    {
+      "id": "7c950e5d-8b07-4235-b6f4-8e12d7ff8a9e",
+      "name": "管理者に通知",
+      "key": "notify_admin",
+      "type": "mail",
+      "position_x": 19,
+      "position_y": 4,
+      "options": {
+        "to": "{{$last.user_created.email}}",
+        "subject": "記事が公開されました：{{$last.title}}",
+        "body": "<p>以下の記事が公開されました：</p><p><strong>{{$last.title}}</strong></p><p>公開日時: {{$last.publish_date}}</p><p><a href=\"{{$env.PUBLIC_URL}}/admin/content/articles/{{$last.id}}\">管理画面で確認する</a></p>"
+      }
+    }
+  ]
+}

@@ -1,0 +1,42 @@
+[
+  {
+    "name": "AI",
+    "slug": "ai"
+  },
+  {
+    "name": "IoT",
+    "slug": "iot"
+  },
+  {
+    "name": "クラウド",
+    "slug": "cloud"
+  },
+  {
+    "name": "セキュリティ",
+    "slug": "security"
+  },
+  {
+    "name": "デザイン",
+    "slug": "design"
+  },
+  {
+    "name": "マーケティング",
+    "slug": "marketing"
+  },
+  {
+    "name": "投資",
+    "slug": "investment"
+  },
+  {
+    "name": "起業",
+    "slug": "entrepreneurship"
+  },
+  {
+    "name": "トレンド",
+    "slug": "trends"
+  },
+  {
+    "name": "食品",
+    "slug": "food"
+  }
+]

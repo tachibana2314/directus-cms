@@ -1,0 +1,25 @@
+{
+  "name": "directus-cms-docker",
+  "version": "1.0.0",
+  "description": "記事管理用のヘッドレスCMS（Directus）をDocker環境で実行するためのプロジェクト",
+  "main": "seed.js",
+  "scripts": {
+    "start": "./setup.sh",
+    "seed": "node seed.js",
+    "stop": "docker-compose down",
+    "restart": "docker-compose restart"
+  },
+  "keywords": [
+    "directus",
+    "cms",
+    "headless",
+    "docker",
+    "articles",
+    "blog"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "axios": "^1.6.0"
+  }
+}

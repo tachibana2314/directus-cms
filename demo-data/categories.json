@@ -1,0 +1,27 @@
+[
+  {
+    "name": "テクノロジー",
+    "slug": "technology",
+    "description": "最新テクノロジーに関する記事"
+  },
+  {
+    "name": "ビジネス",
+    "slug": "business",
+    "description": "ビジネスとマーケティングに関する記事"
+  },
+  {
+    "name": "ライフスタイル",
+    "slug": "lifestyle",
+    "description": "日常生活に関する記事"
+  },
+  {
+    "name": "健康",
+    "slug": "health",
+    "description": "健康と医療に関する記事"
+  },
+  {
+    "name": "エンターテイメント",
+    "slug": "entertainment",
+    "description": "映画、音楽、ゲームなどのエンターテイメント記事"
+  }
+]
