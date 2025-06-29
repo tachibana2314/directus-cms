@@ -1,0 +1,20 @@
+FROM node:18-alpine
+
+WORKDIR /app
+
+# パッケージインストール
+COPY package*.json ./
+RUN npm ci
+
+# ソースコードのコピー
+COPY . .
+
+# 環境変数の設定
+ENV NODE_ENV=development
+ENV NEXT_TELEMETRY_DISABLED=1
+
+# ポート開放
+EXPOSE 3000
+
+# 開発サーバーの起動
+CMD ["npm", "run", "dev"]

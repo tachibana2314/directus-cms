@@ -38,6 +38,13 @@ fi
 echo -e "${YELLOW}必要なディレクトリを作成しています...${NC}"
 mkdir -p uploads extensions data/database data/redis
 
+# パーミッションを設定
+echo -e "${YELLOW}ディレクトリのパーミッションを設定しています...${NC}"
+chmod -R 777 uploads
+chmod -R 777 extensions
+chmod -R 777 data
+chmod -R 777 snapshots
+
 # Dockerコンテナの起動
 echo -e "${YELLOW}Dockerコンテナを起動しています...${NC}"
 docker-compose up -d
@@ -54,7 +61,7 @@ echo -e "${YELLOW}これには数分かかる場合があります...${NC}"
 
 # コンテナが実行中か確認
 RETRY_COUNT=0
-MAX_RETRIES=12  # 2分間（10秒 x 12回）
+MAX_RETRIES=20  # 約3分間（10秒 x 20回）
 
 while [ $RETRY_COUNT -lt $MAX_RETRIES ]; do
     if docker-compose ps | grep -q "directus.*running"; then
@@ -88,52 +95,74 @@ done
 if [ $RETRY_COUNT -eq $MAX_RETRIES ]; then
     echo -e "${RED}Directus APIの応答がありません。ログを確認してください:${NC}"
     echo -e "${YELLOW}docker-compose logs directus${NC}"
-else
-    # 起動確認
-    echo -e "${GREEN}セットアップが完了しました！${NC}"
-    echo -e "${GREEN}Directusは http://localhost:8055 でアクセスできます${NC}"
-    echo -e "${GREEN}管理者ログイン情報:${NC}"
-    echo -e "${GREEN}- Email: $(grep ADMIN_EMAIL .env | cut -d '=' -f2)${NC}"
-    echo -e "${GREEN}- Password: $(grep ADMIN_PASSWORD .env | cut -d '=' -f2)${NC}"
-    echo -e "${YELLOW}注意: 本番環境では必ずパスワードを変更してください${NC}"
-    
-    # スナップショットのインポート
-    echo -e "\n${YELLOW}データモデルのスナップショットをインポートしますか？ (y/N)${NC}"
-    read -r import_snapshot
-    
-    if [[ "$import_snapshot" =~ ^[yY]$ ]]; then
-        echo -e "${YELLOW}スナップショットをインポートしています...${NC}"
-        docker-compose exec directus npx directus schema apply ./snapshots/schema.yaml --yes
-        
-        if [ $? -eq 0 ]; then
-            echo -e "${GREEN}スキーマのインポートに成功しました！${NC}"
-        else
-            echo -e "${RED}スキーマのインポートに失敗しました。ログを確認してください。${NC}"
-        fi
-        
-        echo -e "${YELLOW}ロールと権限をインポートしています...${NC}"
-        docker-compose exec directus npx directus schema apply ./snapshots/roles.yaml --yes
-        
-        if [ $? -eq 0 ]; then
-            echo -e "${GREEN}ロールと権限のインポートに成功しました！${NC}"
-        else
-            echo -e "${RED}ロールと権限のインポートに失敗しました。ログを確認してください。${NC}"
-        fi
-    fi
-    
-    # 拡張機能のインストール
-    if [ -d "./extensions" ] && [ "$(ls -A ./extensions)" ]; then
-        echo -e "\n${YELLOW}拡張機能をインストールしますか？ (y/N)${NC}"
-        read -r install_extensions
-        
-        if [[ "$install_extensions" =~ ^[yY]$ ]]; then
-            echo -e "${YELLOW}拡張機能をインストールしています...${NC}"
-            docker-compose restart directus
-            echo -e "${GREEN}拡張機能のインストールが完了しました！${NC}"
-        fi
-    fi
-    
-    echo -e "\n${GREEN}セットアップが完了しました！${NC}"
-    echo -e "${YELLOW}デモデータをインポートするには、以下のコマンドを実行してください:${NC}"
-    echo -e "${YELLOW}npm install && node seed.js${NC}"
+    exit 1
 fi
+
+# 自動でスキーマとロールを適用
+echo -e "${YELLOW}データモデルのスナップショットを自動適用します...${NC}"
+
+# スキーマのインポート
+echo -e "${YELLOW}スキーマをインポートしています...${NC}"
+docker-compose exec -T directus npx directus schema apply ./snapshots/schema.yaml --yes
+
+if [ $? -eq 0 ]; then
+    echo -e "${GREEN}スキーマのインポートに成功しました！${NC}"
+else
+    echo -e "${RED}スキーマのインポートに失敗しました。続行します...${NC}"
+fi
+
+# ロールと権限のインポート
+echo -e "${YELLOW}ロールと権限をインポートしています...${NC}"
+docker-compose exec -T directus npx directus schema apply ./snapshots/roles.yaml --yes
+
+if [ $? -eq 0 ]; then
+    echo -e "${GREEN}ロールと権限のインポートに成功しました！${NC}"
+else
+    echo -e "${RED}ロールと権限のインポートに失敗しました。続行します...${NC}"
+fi
+
+# NPMパッケージインストール
+echo -e "${YELLOW}デモデータインポート用のパッケージをインストールしています...${NC}"
+npm install
+
+# 必要な情報を表示
+echo -e "\n${GREEN}セットアップが完了しました！${NC}"
+echo -e "${GREEN}Directusは http://localhost:8055 でアクセスできます${NC}"
+echo -e "${GREEN}管理者ログイン情報:${NC}"
+echo -e "${GREEN}- Email: $(grep ADMIN_EMAIL .env | cut -d '=' -f2)${NC}"
+echo -e "${GREEN}- Password: $(grep ADMIN_PASSWORD .env | cut -d '=' -f2)${NC}"
+echo -e "${YELLOW}注意: 本番環境では必ずパスワードを変更してください${NC}"
+
+# Next.jsフロントエンドの起動
+echo -e "\n${YELLOW}Next.jsフロントエンドを起動しますか？ (y/N)${NC}"
+read -r start_frontend
+
+if [[ "$start_frontend" =~ ^[yY]$ ]]; then
+    echo -e "${YELLOW}Next.jsフロントエンドを起動しています...${NC}"
+    docker-compose up -d frontend
+    echo -e "${GREEN}Next.jsフロントエンドが http://localhost:3000 で起動しました${NC}"
+else
+    echo -e "\n${YELLOW}次のコマンドでNext.jsフロントエンドを起動できます:${NC}"
+    echo -e "${YELLOW}docker-compose up -d frontend${NC}"
+fi
+
+# デモデータのインポート
+echo -e "\n${YELLOW}デモデータをインポートしますか？ (y/N)${NC}"
+read -r import_demo
+
+if [[ "$import_demo" =~ ^[yY]$ ]]; then
+    echo -e "${YELLOW}デモデータをインポートしています...${NC}"
+    node seed.js
+    
+    if [ $? -eq 0 ]; then
+        echo -e "${GREEN}デモデータのインポートに成功しました！${NC}"
+    else
+        echo -e "${RED}デモデータのインポートに失敗しました。エラーを確認してください。${NC}"
+    fi
+else
+    echo -e "\n${YELLOW}後でデモデータをインポートするには以下のコマンドを実行してください:${NC}"
+    echo -e "${YELLOW}node seed.js${NC}"
+fi
+
+echo -e "\n${GREEN}全てのセットアップが完了しました！${NC}"
+echo -e "${GREEN}お疲れ様でした！${NC}"

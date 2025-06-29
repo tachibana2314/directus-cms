@@ -8,6 +8,7 @@ services:
     volumes:
       - ./uploads:/directus/uploads
       - ./extensions:/directus/extensions
+      - ./snapshots:/directus/snapshots
     environment:
       KEY: 'directus-cms-docker-key'
       SECRET: 'directus-cms-docker-secret'
@@ -49,9 +50,14 @@ services:
       CORS_EXPOSED_HEADERS: 'Content-Range'
       CORS_CREDENTIALS: 'true'
       CORS_MAX_AGE: '86400'
+      
+      # パフォーマンスとデバッグ設定
+      RATE_LIMITER_ENABLED: 'false'
+      LOG_LEVEL: 'info'
     depends_on:
       - database
       - cache
+    restart: unless-stopped
 
   database:
     image: postgres:15
@@ -63,6 +69,7 @@ services:
       POSTGRES_DB: 'directus'
     ports:
       - "5432:5432"
+    restart: unless-stopped
 
   cache:
     image: redis:7
@@ -70,13 +77,16 @@ services:
       - ./data/redis:/data
     ports:
       - "6379:6379"
+    restart: unless-stopped
       
   # Next.jsフロントエンド
   frontend:
-    image: node:18-alpine
-    working_dir: /app
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.dev
     volumes:
       - ./frontend:/app
+      - /app/node_modules
     ports:
       - "3000:3000"
     environment:
@@ -84,7 +94,6 @@ services:
       - NEXT_PUBLIC_DIRECTUS_URL=http://localhost:8055
     depends_on:
       - directus
-    command: sh -c "npm install && npm run dev"
     restart: unless-stopped
 
 volumes:
