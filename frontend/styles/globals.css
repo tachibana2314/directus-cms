@@ -1,0 +1,46 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* カスタムスタイル */
+html,
+body {
+  @apply antialiased text-gray-900 bg-gray-50;
+}
+
+/* 記事本文のスタイル */
+.prose img {
+  @apply rounded-lg shadow-md;
+}
+
+.prose a {
+  @apply text-blue-600 hover:text-blue-800 transition;
+}
+
+.prose h2 {
+  @apply text-2xl font-bold mt-8 mb-4 text-gray-800;
+}
+
+.prose h3 {
+  @apply text-xl font-semibold mt-6 mb-3 text-gray-800;
+}
+
+.prose ul {
+  @apply list-disc pl-6 mb-4;
+}
+
+.prose ol {
+  @apply list-decimal pl-6 mb-4;
+}
+
+.prose blockquote {
+  @apply border-l-4 border-gray-300 pl-4 py-2 italic my-4 text-gray-700;
+}
+
+.prose pre {
+  @apply bg-gray-900 text-white p-4 rounded-lg overflow-x-auto;
+}
+
+.prose code {
+  @apply bg-gray-100 text-gray-800 px-1 py-0.5 rounded text-sm;
+}
