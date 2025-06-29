@@ -1,0 +1,17 @@
+{
+  "name": "directus-extension-sitemap",
+  "version": "1.0.0",
+  "description": "XMLサイトマップ生成エンドポイント",
+  "main": "index.js",
+  "keywords": [
+    "directus",
+    "directus-extension",
+    "directus-custom-endpoint"
+  ],
+  "directus:extension": {
+    "type": "endpoint",
+    "path": "/sitemap",
+    "source": "index.js",
+    "host": "^10.0.0"
+  }
+}

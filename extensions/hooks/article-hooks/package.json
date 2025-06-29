@@ -1,0 +1,17 @@
+{
+  "name": "directus-extension-article-hooks",
+  "version": "1.0.0",
+  "description": "記事管理のカスタムフック拡張機能",
+  "main": "index.js",
+  "keywords": [
+    "directus",
+    "directus-extension",
+    "directus-custom-hook"
+  ],
+  "directus:extension": {
+    "type": "hook",
+    "path": "index.js",
+    "source": "src/index.js",
+    "host": "^10.0.0"
+  }
+}
