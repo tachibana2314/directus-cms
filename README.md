@@ -52,19 +52,25 @@ cp .env.example .env
 # 特に KEY, SECRET, ADMIN_EMAIL, ADMIN_PASSWORD は必ず変更してください
 ```
 
-### 3. Dockerコンテナの起動
+### 3. セットアップ実行
 
-以下のコマンドでセットアップスクリプトを実行すると、必要なディレクトリの作成や環境変数の設定、コンテナの起動が行われます。
+以下のコマンドでセットアップスクリプトを実行します：
 
 ```bash
 ./setup.sh
 ```
 
-または、手動で以下のコマンドを実行します：
+または、Makeコマンドを使用します：
 
 ```bash
-docker-compose up -d
+make setup
 ```
+
+セットアップスクリプトは以下の処理を行います：
+- 必要なディレクトリの作成
+- パーミッションの設定
+- 環境設定ファイルの作成
+- Dockerコンテナの起動
 
 ### 4. アクセス方法
 
@@ -73,23 +79,42 @@ docker-compose up -d
 - Directus管理画面: http://localhost:8055/admin
 - API: http://localhost:8055/
 
-管理者アカウント：
-- Email: .envファイルで設定したADMIN_EMAIL
-- Password: .envファイルで設定したADMIN_PASSWORD
+管理者アカウント（デフォルト）：
+- Email: admin@example.com
+- Password: admin_password
 
-### 5. デモデータのインポート (オプション)
+**注意**: 起動には数分かかる場合があります。ブラウザで直ちにアクセスできない場合は、しばらく待ってからリロードしてください。
 
-サンプルデータをインポートするには、まず必要なパッケージをインストールします：
+### 5. デモデータのインポート
+
+コンテナが起動して安定した後、以下のコマンドでデモデータをインポートできます：
 
 ```bash
-npm init -y
-npm install axios
+make seed
 ```
 
-その後、以下のコマンドを実行してデータをインポートします：
+または、直接以下のコマンドを実行します：
 
 ```bash
-node seed.js
+npm install && node seed.js
+```
+
+### トラブルシューティング
+
+#### パーミッションエラーが発生する場合
+
+```bash
+make fix-permissions
+```
+
+#### コンテナが起動しない場合
+
+```bash
+# ログを確認
+docker-compose logs directus
+
+# コンテナを再起動
+docker-compose restart
 ```
 
 ## データモデル

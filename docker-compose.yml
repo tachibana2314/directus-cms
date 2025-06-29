@@ -8,6 +8,7 @@ services:
     volumes:
       - ./uploads:/directus/uploads
       - ./extensions:/directus/extensions
+      - ./snapshots:/directus/snapshots
     environment:
       KEY: 'directus-cms-docker-key'
       SECRET: 'directus-cms-docker-secret'
@@ -43,6 +44,7 @@ services:
     depends_on:
       - database
       - cache
+    restart: always
 
   database:
     image: postgres:15
@@ -54,6 +56,7 @@ services:
       POSTGRES_DB: 'directus'
     ports:
       - "5432:5432"
+    restart: always
 
   cache:
     image: redis:7
@@ -61,6 +64,7 @@ services:
       - ./data/redis:/data
     ports:
       - "6379:6379"
+    restart: always
 
 volumes:
   directus-uploads:
