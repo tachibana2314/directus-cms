@@ -52,19 +52,20 @@ cp .env.example .env
 # 特に KEY, SECRET, ADMIN_EMAIL, ADMIN_PASSWORD は必ず変更してください
 ```
 
-### 3. Dockerコンテナの起動
+### 3. セットアップ実行
 
-以下のコマンドでセットアップスクリプトを実行すると、必要なディレクトリの作成や環境変数の設定、コンテナの起動が行われます。
+以下のコマンドでセットアップスクリプトを実行します：
 
 ```bash
 ./setup.sh
 ```
 
-または、手動で以下のコマンドを実行します：
-
-```bash
-docker-compose up -d
-```
+このスクリプトは以下を自動的に行います：
+- 必要なディレクトリの作成とパーミッションの設定
+- Dockerコンテナの起動
+- Directus APIの起動確認
+- スキーマの適用（APIが応答する場合）
+- パッケージのインストール
 
 ### 4. アクセス方法
 
@@ -74,22 +75,76 @@ docker-compose up -d
 - API: http://localhost:8055/
 
 管理者アカウント：
-- Email: .envファイルで設定したADMIN_EMAIL
-- Password: .envファイルで設定したADMIN_PASSWORD
+- Email: .envファイルで設定したADMIN_EMAIL（デフォルト: admin@example.com）
+- Password: .envファイルで設定したADMIN_PASSWORD（デフォルト: admin_password）
 
-### 5. デモデータのインポート (オプション)
+### 5. デモデータのインポート
 
-サンプルデータをインポートするには、まず必要なパッケージをインストールします：
+APIが正常に動作していることを確認した後、以下のコマンドでデモデータをインポートできます：
 
 ```bash
-npm init -y
-npm install axios
+make seed
 ```
 
-その後、以下のコマンドを実行してデータをインポートします：
+または
 
 ```bash
 node seed.js
+```
+
+### トラブルシューティング
+
+セットアップ時に問題が発生した場合は、以下の対応を試してください：
+
+#### パーミッションエラーが発生する場合
+
+```bash
+# ディレクトリのパーミッションを修正
+make fix-permissions
+```
+
+#### APIが起動しない場合
+
+```bash
+# ログを確認
+docker-compose logs directus
+
+# コンテナを再起動
+docker-compose restart directus
+
+# APIが起動した後、スキーマを適用
+make apply-schema
+```
+
+### 便利なMakeコマンド
+
+```bash
+# サービスの起動
+make start
+
+# サービスの停止
+make stop
+
+# サービスの再起動
+make restart
+
+# ログの表示
+make logs
+
+# スキーマの適用
+make apply-schema
+
+# デモデータのインポート
+make seed
+
+# パーミッション修正
+make fix-permissions
+
+# フロントエンド起動
+make frontend
+
+# 利用可能なコマンド一覧を表示
+make help
 ```
 
 ## データモデル
